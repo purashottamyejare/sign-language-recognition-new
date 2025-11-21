@@ -8,6 +8,8 @@ import pickle
 import streamlit as st
 from PIL import Image
 
+st.set_page_config(page_title='Hand Sign Classifier', page_icon='✋', layout='wide')
+
 
 @st.cache_resource
 def load_model():
@@ -132,8 +134,6 @@ def load_related_image(letter: str):
 def load_reference_image():
     return Image.open(Path('static') / 'gestures.jpg')
 
-
-st.set_page_config(page_title='Hand Sign Classifier', page_icon='✋', layout='wide')
 
 if 'show_detector' not in st.session_state:
     st.session_state.show_detector = False
