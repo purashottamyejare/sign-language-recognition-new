@@ -31,4 +31,4 @@ Open that URL in your browser to test the gesture recognition functionality.
 
 note- first run collect_img.py and check how its working, You may need to update code to save photos, so go with script and check how many photos You want for each gesture.
 
-This line combines both changes and resolves conflict successfully.
+Note- Ignore streamlit_app.py, it is used to deploy project to the live server
