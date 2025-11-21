@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Recognition - Live Detection</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-pink: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .animated-bg::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(99, 102, 241, 0.2) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        /* Navbar */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 1rem 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .navbar-brand i {
+            font-size: 1.75rem;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white !important;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            position: relative;
+            z-index: 2;
+            padding: 120px 0 40px;
+            min-height: 100vh;
+        }
+
+        /* Camera Card */
+        .camera-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .camera-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .camera-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .camera-title i {
+            font-size: 1.75rem;
+            color: var(--primary);
+        }
+
+        .start-camera-btn, .stop-camera-btn, .show-gestures-btn {
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            font-size: 0.95rem;
+        }
+
+        .start-camera-btn {
+            background: var(--gradient);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .start-camera-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            color: white;
+        }
+
+        .start-camera-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .stop-camera-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .stop-camera-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+            color: white;
+        }
+
+        .stop-camera-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .show-gestures-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .show-gestures-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+            color: white;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            min-height: 450px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        #camera-feed {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 500px;
+            object-fit: contain;
+        }
+
+        .camera-loading {
+            position: absolute;
+            color: white;
+            font-size: 1.25rem;
+            z-index: 10;
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .camera-loading.hidden {
+            display: none;
+        }
+
+        .camera-error {
+            position: absolute;
+            color: #ef4444;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            font-size: 1rem;
+            z-index: 10;
+            text-align: center;
+            display: none;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .camera-error.show {
+            display: block;
+        }
+
+        /* Info Panel */
+        .info-panel {
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .prediction-card {
+            background: var(--gradient-purple);
+            color: white;
+        }
+
+        .fact-card {
+            background: var(--gradient-pink);
+            color: white;
+        }
+
+        .image-card {
+            background: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .prediction-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fact-text {
+            font-size: 1rem;
+            line-height: 1.8;
+            margin: 0;
+            text-align: center;
+        }
+
+        #object-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            max-height: 300px;
+            object-fit: contain;
+        }
+
+        #object-image:hover {
+            transform: scale(1.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .camera-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .camera-header .d-flex {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .camera-card, .info-panel {
+                margin-bottom: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 100px 0 30px;
+            }
+
+            .camera-card {
+                padding: 1.5rem;
+            }
+
+            .camera-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .start-camera-btn, .stop-camera-btn, .show-gestures-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .camera-header .d-flex {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .video-container {
+                min-height: 350px;
+            }
+
+            .prediction-text {
+                font-size: 2rem;
+            }
+
+            .info-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="bi bi-arrow-left-circle"></i>
+                <span>Back to Home</span>
+            </a>
+            <a class="navbar-brand ms-auto" href="#">
+                <i class="bi bi-signpost-2"></i>
+                Sign Language Recognition
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <div class="row g-4">
+                <!-- Camera Feed Column -->
+                <div class="col-lg-7 col-xl-8">
+                    <div class="camera-card">
+                        <div class="camera-header">
+                            <div class="camera-title">
+                                <i class="bi bi-camera-video-fill"></i>
+                                Live Camera Feed
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap justify-content-end">
+                                <button class="show-gestures-btn" data-bs-toggle="modal" data-bs-target="#gesturesModal">
+                                    <i class="bi bi-image"></i>
+                                    Gestures
+                                </button>
+                                <button class="start-camera-btn" id="start-camera-btn" onclick="startCamera()">
+                                    <i class="bi bi-play-circle-fill"></i>
+                                    Start Camera
+                                </button>
+                                <button class="stop-camera-btn" id="stop-camera-btn" onclick="stopCamera()" style="display: none;">
+                                    <i class="bi bi-stop-circle-fill"></i>
+                                    Stop Camera
+                                </button>
+                            </div>
+                        </div>
+                        <div class="video-container">
+                            <div class="camera-loading" id="camera-loading">Click "Start Camera" button to begin</div>
+                            <div class="camera-error" id="camera-error">
+                                <strong>Camera not accessible</strong><br>
+                                Please make sure your camera is connected and permissions are granted.<br>
+                                <button class="start-camera-btn mt-3" onclick="startCamera()">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                    Try Again
+                                </button>
+                            </div>
+                            <img src="" alt="Video Feed" id="camera-feed" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Panel Column -->
+                <div class="col-lg-5 col-xl-4">
+                    <div class="info-panel">
+                        <!-- Prediction Card -->
+                        <div class="info-card prediction-card">
+                            <div class="card-title">Detected Sign</div>
+                            <div class="prediction-text" id="predicted-char">Not Detected</div>
+                        </div>
+
+                        <!-- Fact Card -->
+                        <div class="info-card fact-card">
+                            <div class="card-title">Fun Fact</div>
+                            <div class="fact-text" id="informative-fact">
+                                Show your hand sign to see interesting facts here!
+                            </div>
+                        </div>
+
+                        <!-- Image Card -->
+                        <div class="info-card image-card">
+                            <div class="card-title" style="color: #64748b;">Related Image</div>
+                            <img id="object-image" src="{{ url_for('static', filename='logo.png') }}" alt="Object Image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gestures Modal -->
+    <div class="modal fade" id="gesturesModal" tabindex="-1" aria-labelledby="gesturesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header" style="background: var(--gradient); color: white; border-radius: 20px 20px 0 0;">
+                    <h5 class="modal-title" id="gesturesModalLabel" style="font-weight: 700; font-size: 1.5rem;">
+                        <i class="bi bi-hand-index-thumb-fill"></i>
+                        American Sign Language (ASL) Alphabet Gestures
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <img src="{{ url_for('static', filename='gestures.jpg') }}" alt="ASL Alphabet Gestures" class="img-fluid rounded" style="width: 100%; height: auto;">
+                    <p class="text-center mt-3 text-muted">
+                        <small>Reference guide for American Sign Language alphabet gestures</small>
+                    </p>
+                </div>
+                <div class="modal-footer" style="border-top: none; padding-top: 0;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script>
+        let checkInterval = null;
+        let cameraStarted = false;
+
+        // Function to stop the camera
+        function stopCamera() {
+            const cameraFeed = document.getElementById('camera-feed');
+            const startBtn = document.getElementById('start-camera-btn');
+            const stopBtn = document.getElementById('stop-camera-btn');
+            const cameraLoading = document.getElementById('camera-loading');
+
+            if (cameraFeed && cameraFeed.src) {
+                cameraFeed.src = '';
+                cameraFeed.style.display = 'none';
+            }
+
+            if (checkInterval) {
+                clearInterval(checkInterval);
+                checkInterval = null;
+            }
+
+            cameraStarted = false;
+
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="bi bi-play-circle-fill"></i> Start Camera';
+                startBtn.style.display = 'inline-flex';
+                startBtn.style.background = 'var(--gradient)';
+            }
+
+            if (stopBtn) {
+                stopBtn.style.display = 'none';
+            }
+
+            if (cameraLoading) {
+                cameraLoading.classList.remove('hidden');
+                cameraLoading.textContent = 'Click "Start Camera" button to begin';
+            }
+
+            console.log('Camera stopped');
+        }
+
+        // Function to start the camera
+        function startCamera() {
+            const cameraFeed = document.getElementById('camera-feed');
+            const cameraLoading = document.getElementById('camera-loading');
+            const cameraError = document.getElementById('camera-error');
+            const startBtn = document.getElementById('start-camera-btn');
+            const stopBtn = document.getElementById('stop-camera-btn');
+
+            if (!cameraFeed || cameraStarted) return;
+
+            // Disable button and show loading
+            if (startBtn) {
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Starting...';
+            }
+
+            // Show stop button
+            if (stopBtn) {
+                stopBtn.style.display = 'inline-flex';
+            }
+            
+            showLoading('Starting camera...');
+            if (cameraError) {
+                cameraError.classList.remove('show');
+            }
+
+            // Start the camera feed
+            const videoUrl = "{{ url_for('video_feed') }}?t=" + new Date().getTime();
+            cameraFeed.src = videoUrl;
+            cameraFeed.style.display = 'block';
+            cameraStarted = true;
+
+            // Clear any existing interval
+            if (checkInterval) {
+                clearInterval(checkInterval);
+            }
+
+            // Function to update button state
+            function updateButtonState(state) {
+                if (!startBtn) return;
+                switch(state) {
+                    case 'active':
+                        startBtn.disabled = true;
+                        startBtn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Camera Active';
+                        startBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                        if (stopBtn) {
+                            stopBtn.style.display = 'inline-flex';
+                        }
+                        break;
+                    case 'error':
+                        startBtn.disabled = false;
+                        startBtn.innerHTML = '<i class="bi bi-play-circle-fill"></i> Start Camera';
+                        startBtn.style.background = 'var(--gradient)';
+                        if (stopBtn) {
+                            stopBtn.style.display = 'none';
+                        }
+                        break;
+                    case 'starting':
+                        startBtn.disabled = true;
+                        startBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Starting...';
+                        break;
+                }
+            }
+
+            // Check if image starts loading
+            checkInterval = setInterval(function() {
+                if (cameraFeed.naturalWidth > 0 && cameraFeed.naturalHeight > 0) {
+                    console.log('Camera feed loaded successfully');
+                    clearInterval(checkInterval);
+                    checkInterval = null;
+                    hideLoading();
+                    if (cameraError) {
+                        cameraError.classList.remove('show');
+                    }
+                    updateButtonState('active');
+                }
+            }, 500);
+
+            // Hide loading after 5 seconds (for MJPEG streams)
+            setTimeout(function() {
+                if (checkInterval) {
+                    clearInterval(checkInterval);
+                    checkInterval = null;
+                }
+                if (cameraLoading && !cameraLoading.classList.contains('hidden')) {
+                    hideLoading();
+                    console.log('Assuming camera feed is active (MJPEG stream)');
+                    updateButtonState('active');
+                }
+            }, 5000);
+
+            // Simple error handling - no retries, just on/off
+            cameraFeed.onerror = function(e) {
+                console.error('Camera feed error:', e);
+                
+                // Wait a moment to check if it's a real error or just MJPEG behavior
+                setTimeout(function() {
+                    if (cameraFeed.naturalWidth === 0 && cameraFeed.naturalHeight === 0) {
+                        // Real error - camera not accessible
+                        console.error('Camera not accessible');
+                        
+                        if (checkInterval) {
+                            clearInterval(checkInterval);
+                            checkInterval = null;
+                        }
+                        
+                        showLoading('');
+                        if (cameraError) {
+                            cameraError.innerHTML = `
+                                <strong>⚠️ Camera Not Accessible</strong><br><br>
+                                <small>Possible causes:</small><br>
+                                • Camera not connected<br>
+                                • Camera permission denied<br>
+                                • Camera in use by another application<br>
+                                • Flask server camera error<br><br>
+                                <small>Please check your camera and try again.</small>
+                            `;
+                            cameraError.classList.add('show');
+                        }
+                        if (cameraLoading) {
+                            cameraLoading.classList.add('hidden');
+                        }
+                        updateButtonState('error');
+                        cameraStarted = false;
+                    } else {
+                        // Stream is actually working, ignore the error
+                        console.log('Camera feed is working');
+                    }
+                }, 2000);
+            };
+
+            cameraFeed.onloadstart = function() {
+                console.log('Camera feed started loading');
+                showLoading('Camera connecting...');
+            };
+        }
+
+        // Function to hide loading and show camera
+        function hideLoading() {
+            const cameraLoading = document.getElementById('camera-loading');
+            const cameraFeed = document.getElementById('camera-feed');
+            if (cameraLoading) {
+                cameraLoading.classList.add('hidden');
+            }
+            if (cameraFeed) {
+                cameraFeed.classList.add('loaded');
+            }
+        }
+
+        // Function to show loading
+        function showLoading(message) {
+            const cameraLoading = document.getElementById('camera-loading');
+            const cameraFeed = document.getElementById('camera-feed');
+            if (cameraLoading) {
+                cameraLoading.textContent = message || 'Initializing camera';
+                cameraLoading.classList.remove('hidden');
+            }
+            if (cameraFeed) {
+                cameraFeed.classList.remove('loaded');
+            }
+        }
+
+        // Make functions available globally
+        window.startCamera = startCamera;
+        window.stopCamera = stopCamera;
+
+        // Update predictions
+        $(document).ready(function() {
+            function updatePredictedCharacter() {
+                $.get('/detected_char', function(data) {
+                    if (data.character && data.character !== 'Not Detected') {
+                        $('#predicted-char').html(data.character);
+                    } else {
+                        $('#predicted-char').html('Not Detected');
+                    }
+                }).fail(function() {
+                    $('#predicted-char').html('Not Detected');
+                });
+            }
+
+            function updateObjectImage() {
+                $.get('/object_image', function(data) {
+                    if (data.image_url) {
+                        $('#object-image').attr('src', data.image_url);
+                    }
+                }).fail(function() {
+                    $('#object-image').attr('src', "{{ url_for('static', filename='logo.png') }}");
+                });
+            }
+
+            function updateInformativeFact() {
+                $.get('/informative_fact', function(data) {
+                    if (data.fact) {
+                        $('#informative-fact').text(data.fact);
+                    }
+                }).fail(function() {
+                    $('#informative-fact').text('Fun Fact: Show your hand sign to see interesting facts here!');
+                });
+            }
+
+            // Update every 500ms for smooth real-time experience
+            setInterval(updatePredictedCharacter, 500);
+            setInterval(updateObjectImage, 1000);
+            setInterval(updateInformativeFact, 500);
+
+            // Initial load
+            updatePredictedCharacter();
+            updateObjectImage();
+            updateInformativeFact();
+        });
+    </script>
+</body>
+</html>

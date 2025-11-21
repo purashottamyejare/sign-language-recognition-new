@@ -1,0 +1,23 @@
+# Virtual environment
+.venv/
+venv/
+
+# IDE files
+.idea/
+.vscode/
+
+# Dataset folders
+data/
+dataset/
+images/
+img/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# Build/output/cache
+*.egg-info/

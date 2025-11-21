@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Detector - Home</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+<style>
+        * {
+    margin: 0;
+    padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-alt: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--gradient);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+            z-index: 1;
+    overflow: hidden;
+        }
+
+        .animated-bg::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(99, 102, 241, 0.3) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        /* Navbar */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 1rem 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.75rem;
+            color: white !important;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .navbar-brand i {
+            font-size: 2rem;
+            animation: wave 2s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(20deg); }
+            75% { transform: rotate(-20deg); }
+        }
+
+        /* Hero Section */
+        .hero-section {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 120px 0 60px;
+        }
+
+        .hero-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 60px 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            animation: slideUp 0.8s ease-out;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 95%;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #64748b;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 2rem 0;
+        }
+
+        .feature-list li {
+            padding: 0.75rem 0;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.05rem;
+        }
+
+        .feature-list i {
+            color: var(--success);
+            font-size: 1.25rem;
+        }
+
+        /* CTA Button */
+        .btn-cta {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+            color: white;
+        }
+
+        .btn-cta:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-cta i {
+            font-size: 1.5rem;
+        }
+
+        /* Stats Cards */
+        .stats-row {
+            margin-top: 3rem;
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card h4 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0.5rem 0;
+        }
+
+        .stat-card p {
+            color: #64748b;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        /* About Section */
+        .about-section {
+            position: relative;
+            z-index: 2;
+            padding: 60px 0;
+        }
+
+        .about-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 95%;
+        }
+
+        .about-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .about-title i {
+            color: var(--primary);
+            font-size: 2.5rem;
+        }
+
+        .about-content {
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            height: 100%;
+            transition: transform 0.3s ease;
+        }
+
+        .about-content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+        }
+
+        .about-icon {
+            font-size: 3rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(99, 102, 241, 0.1);
+            border-radius: 20px;
+        }
+
+        .about-subtitle {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .about-text {
+            font-size: 1.05rem;
+            color: #475569;
+            line-height: 1.8;
+            margin: 0;
+        }
+
+        .about-text strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .feature-highlight {
+            text-align: center;
+            padding: 30px 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+    height: 100%;
+        }
+
+        .feature-highlight:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-desc {
+            font-size: 0.95rem;
+            color: #64748b;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .mission-statement {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border-radius: 20px;
+            padding: 40px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .mission-content {
+            position: relative;
+        }
+
+        .mission-content i {
+            font-size: 4rem;
+            color: var(--primary);
+            opacity: 0.2;
+    position: absolute;
+            top: -20px;
+            left: -10px;
+        }
+
+        .mission-text {
+            font-size: 1.15rem;
+            color: #1e293b;
+            line-height: 1.8;
+            font-style: italic;
+            margin: 0;
+            padding-left: 50px;
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-card {
+                padding: 40px 30px;
+                margin: 0 15px;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .btn-cta {
+                width: 100%;
+                justify-content: center;
+                padding: 16px 35px;
+                font-size: 1.1rem;
+            }
+
+            .about-card {
+                padding: 30px 20px;
+                margin: 0 15px;
+            }
+
+            .about-title {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .about-content {
+                padding: 20px;
+                margin-bottom: 1rem;
+            }
+
+            .about-subtitle {
+                font-size: 1.25rem;
+            }
+
+            .about-text {
+                font-size: 1rem;
+            }
+
+            .mission-statement {
+                padding: 25px;
+            }
+
+            .mission-text {
+                font-size: 1rem;
+                padding-left: 30px;
+            }
+
+            .mission-content i {
+                font-size: 3rem;
+                top: -10px;
+                left: -5px;
+            }
+        }
+
+        /* About Button in Navbar */
+        .about-btn-nav {
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .about-btn-nav:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* About Section Scroll Offset */
+        #about-section {
+            scroll-margin-top: 100px;
+  }
+</style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-signpost-2"></i>
+                Sign Language Detector
+            </a>
+            <button class="btn btn-outline-light about-btn-nav" onclick="scrollToAbout()" type="button">
+                <i class="bi bi-info-circle"></i>
+                About Project
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-card">
+                <div class="text-center">
+                    <h1 class="hero-title">
+                        Sign Language Detection-with AI
+                    </h1>
+                    <p class="hero-subtitle">
+                        Break down communication barriers!
+                        <!-- Our advanced technology makes sign language detection accessible to everyone. -->
+                    </p>
+
+                    <ul class="feature-list text-start">
+                        <li>
+                            <i class="bi bi-camera-video-fill"></i>
+                            Real-time hand gesture recognition
+                        </li>
+                        <li>
+                            <i class="bi bi-cpu-fill"></i>
+                            Powered by advanced machine learning
+                        </li>
+                        <li>
+                            <i class="bi bi-mortarboard-fill"></i>
+                            Educational initiative — helping children learn sign language
+                        </li>
+                    </ul>
+
+                    <div class="d-flex flex-column flex-md-row gap-3 justify-content-center align-items-center mb-4">
+                        <button type="button" class="btn btn-cta btn-lg" id="startBtn">
+                            <i class="bi bi-play-circle-fill"></i>
+                            Start Detection Now
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-lg" data-bs-toggle="modal" data-bs-target="#gesturesModal" style="padding: 18px 45px; border-radius: 50px; font-weight: 600; border: 2px solid var(--primary); color: var(--primary);">
+                            <i class="bi bi-image"></i>
+                            Check American Gestures
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-lg" onclick="scrollToAbout()" style="padding: 18px 45px; border-radius: 50px; font-weight: 600; border: 2px solid #64748b; color: #64748b;">
+                            <i class="bi bi-info-circle"></i>
+                            About Project
+                        </button>
+</div>
+
+                    <div class="row stats-row justify-content-center">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="stat-card">
+                                <i class="bi bi-alphabet"></i>
+                                <h4>26</h4>
+                                <p>Alphabets Supported</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="stat-card">
+                                <i class="bi bi-lightning-charge-fill"></i>
+                                <h4>Real-time</h4>
+                                <p>Instant Recognition</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="stat-card">
+                                <i class="bi bi-award-fill"></i>
+                                <h4>100%</h4>
+                                <p>Free & Accessible</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Project Section -->
+    <section id="about-section" class="about-section">
+        <div class="container">
+            <div class="about-card">
+                <div class="text-center mb-4">
+                    <h2 class="about-title">
+                        <i class="bi bi-info-circle-fill"></i>
+                        About This Project
+                    </h2>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="about-content">
+                            <div class="about-icon mb-3">
+                                <i class="bi bi-heart-fill"></i>
+                            </div>
+                            <h3 class="about-subtitle">Our Initiative</h3>
+                            <p class="about-text">
+                                This is an educational initiative designed to help children learn American Sign Language (ASL) 
+                                alphabets in a fun and interactive way. We believe in breaking down communication barriers and 
+                                making sign language learning accessible to everyone, especially young learners.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="about-content">
+                            <div class="about-icon mb-3">
+                                <i class="bi bi-bullseye"></i>
+                            </div>
+                            <h3 class="about-subtitle">Why Alphabets Only?</h3>
+                            <p class="about-text">
+                                While it's impossible to cover all sign language gestures, we focused specifically on alphabets 
+                                because they form the foundation of sign language learning. This approach is most helpful for 
+                                <strong>small children who are just starting to learn gestures</strong>, making their learning 
+                                journey easier and more engaging.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="feature-highlight">
+                            <div class="feature-icon">
+                                <i class="bi bi-image"></i>
+                            </div>
+                            <h4 class="feature-title">Visual Learning</h4>
+                            <p class="feature-desc">
+                                Each detected alphabet is paired with a related image to help children make connections 
+                                and remember better.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="feature-highlight">
+                            <div class="feature-icon">
+                                <i class="bi bi-lightbulb-fill"></i>
+                            </div>
+                            <h4 class="feature-title">Fun Facts</h4>
+                            <p class="feature-desc">
+                                We've added interesting fun facts for each letter to make learning enjoyable and help 
+                                children understand better through engaging information.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="feature-highlight">
+                            <div class="feature-icon">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <h4 class="feature-title">AI-Powered</h4>
+                            <p class="feature-desc">
+                                Using advanced machine learning and computer vision to provide real-time, accurate 
+                                alphabet recognition for better learning experience.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mission-statement mt-5">
+                    <div class="mission-content">
+                        <i class="bi bi-quote"></i>
+                        <p class="mission-text">
+                            Our goal is to contribute to nation building by making sign language education accessible 
+                            and fun for children, helping them develop communication skills from an early age.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gestures Modal -->
+    <div class="modal fade" id="gesturesModal" tabindex="-1" aria-labelledby="gesturesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header" style="background: var(--gradient); color: white; border-radius: 20px 20px 0 0;">
+                    <h5 class="modal-title" id="gesturesModalLabel" style="font-weight: 700; font-size: 1.5rem;">
+                        <i class="bi bi-hand-index-thumb-fill"></i>
+                        American Sign Language (ASL) Alphabet Gestures
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <img src="{{ url_for('static', filename='gestures.jpg') }}" alt="ASL Alphabet Gestures" class="img-fluid rounded" style="width: 100%; height: auto;">
+                    <p class="text-center mt-3 text-muted">
+                        <small>Reference guide for American Sign Language alphabet gestures</small>
+                    </p>
+                </div>
+                <div class="modal-footer" style="border-top: none; padding-top: 0;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.getElementById('startBtn').addEventListener('click', function() {
+            window.location.href = "{{ url_for('detect') }}";
+        });
+
+        // Smooth scroll to About section
+        function scrollToAbout() {
+            const aboutSection = document.getElementById('about-section');
+            if (aboutSection) {
+                aboutSection.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+    </script>
+</body>
+</html>
