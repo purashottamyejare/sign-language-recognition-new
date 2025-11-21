@@ -14,7 +14,16 @@ st.set_page_config(page_title='Hand Sign Classifier', page_icon='✋', layout='w
 @st.cache_resource
 def load_model():
     model_dict = pickle.load(open('model.p', 'rb'))
-    return model_dict['model']
+    model = model_dict['model']
+
+    # Workaround for models trained with older scikit-learn versions
+    # so they keep working on newer runtimes that expect monotonic settings.
+    if hasattr(model, 'estimators_'):
+        for estimator in model.estimators_:
+            if not hasattr(estimator, 'monotonic_cst'):
+                estimator.monotonic_cst = None
+
+    return model
 
 
 model = load_model()
@@ -163,7 +172,6 @@ if st.session_state.show_reference:
         st.image(
             load_reference_image(),
             caption='American Sign Language alphabet',
-            use_container_width=True
         )
         if st.button('Close reference', key='close_reference'):
             st.session_state.show_reference = False
@@ -220,5 +228,12 @@ else:
 st.sidebar.title('About the Project')
 st.sidebar.markdown(
     'This interactive sign-language explorer is designed for kids and educators: snap a picture of a hand sign, learn the corresponding alphabet letter, see a fun object, and read an engaging fact to reinforce learning.'
+)
+st.sidebar.markdown(
+    '**Project by**\n'
+    '- Purashottam Yejare\n'
+    '- Harshal Kumbhar\n'
+    '- Ranjeet Aswale\n'
+    '- Sushant Sutar'
 )
 
