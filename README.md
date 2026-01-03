@@ -11,6 +11,40 @@ It helps bridge communication between hearing-impaired individuals and others.
 
 ---
 
+🔧 Installation & Setup (With Versions)
+✅ Prerequisites
+
+OS: Windows 10 / 11
+
+Python Launcher: py (Python 3.x installed)
+
+📌 Step 1: Clone the Repository
+git clone https://github.com/your-username/sign-language-recognition-new.git
+cd sign-language-recognition-new
+
+📌 Step 2: Create & Activate Virtual Environment
+py -m venv venv
+venv\Scripts\activate
+
+📌 Step 3: Install Required Libraries (Version Locked)
+pip install flask==2.3.3
+pip install numpy==1.23.5
+pip install scikit-learn==1.3.2
+pip install opencv-python==4.8.0.76
+pip install mediapipe==0.10.9
+pip install matplotlib==3.7.3
+
+
+📌 Important:
+These versions are required to avoid pickle compatibility issues with the trained ML model.
+
+📌 Step 4: Run the Application
+py app.py
+
+Open in browser:
+
+http://127.0.0.1:5000/
+
 ## 🚀 How to Run the Project
 
 ### 1️⃣ Step 1 — Collect Hand Gesture Images
